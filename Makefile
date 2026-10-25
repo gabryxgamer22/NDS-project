@@ -11,10 +11,9 @@ TARGET      := IlMioGiocoNDS
 SOURCES     := source
 BUILD       := build
 
-# Opzioni di architettura e flag obbligatori richiesti dalla nuova suite devkitPro
-ARCH        := -mthumb -mthumb-interwork
-CFLAGS      := -g -Wall -O2 -march=armv5te -mtune=arm946e-s -fomit-frame-pointer -ffast-math $(ARCH) -specs=ds_arm9.specs -DARM9 -I$(LIBNDS)/include
-LDFLAGS     := -g $(ARCH) -mthumb -mthumb-interwork -specs=ds_arm9.specs -L$(LIBNDS)/lib
+# Usiamo solo le macro native di devkitPro per evitare doppioni
+CFLAGS      := $(ARM9FLAGS) -I$(LIBNDS)/include
+LDFLAGS     := $(NDS_LDFLAGS) -L$(LIBNDS)/lib
 
 .PHONY: all clean
 
@@ -27,7 +26,7 @@ $(TARGET).nds: $(TARGET).elf
 $(TARGET).elf: $(SOURCES)/main.c
 	@echo "--- Compilazione in corso ---"
 	@mkdir -p $(BUILD)
-	$(CC) $(CFLAGS) $(LDFLAGS) $< -lnds9 -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -lnds9 -o $@
 
 clean:
 	@echo "Pulizia file temporanei..."
