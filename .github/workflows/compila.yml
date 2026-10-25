@@ -14,16 +14,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install devkitPro and libnds
+      - name: Install devkitPro
         shell: bash
         run: |
           set -eux
           sudo apt-get update
           sudo apt-get install -y wget ca-certificates
-          wget -q https://github.com/devkitPro/pacman/releases/latest/download/devkitpro-pacman.deb
-          sudo dpkg -i devkitpro-pacman.deb
-          sudo dkp-pacman -Syu --noconfirm
-          sudo dkp-pacman -S --needed --noconfirm devkitARM libnds
+          wget https://apt.devkitpro.org/install-devkitpro-pacman
+          chmod +x install-devkitpro-pacman
+          sudo ./install-devkitpro-pacman
+
+      - name: Install libnds and devkitARM
+        shell: bash
+        run: |
+          set -eux
+          sudo /usr/local/bin/dkp-pacman -S --needed --noconfirm devkitARM libnds
 
       - name: Build NDS homebrew
         shell: bash
