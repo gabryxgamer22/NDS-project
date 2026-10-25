@@ -1,16 +1,13 @@
-ifeq ($(strip $(DEVKITARM)),)
-$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
-endif
-
-include $(DEVKITARM)/ds_rules
-
+#---------------------------------------------------------------------------------
+# PARAMETRI DI COMPILAZIONE DIRETTI (SENZA REGOLE ESTERNE)
+#---------------------------------------------------------------------------------
 TARGET      := IlMioGiocoNDS
 SOURCES     := source
 BUILD       := build
 
-# Flag separati per evitare conflitti di spec
-CFLAGS      := -DARM9 -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -I$(LIBNDS)/include
-LDFLAGS     := -specs=ds_arm9.specs -L$(LIBNDS)/lib
+# Il segreto è passare sia il flag -DARM9 sia le specifiche minime senza raddoppiare i link
+CFLAGS      := -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ -I/opt/devkitpro/libnds/include
+LDFLAGS     := -specs=ds_arm9.specs -L/opt/devkitpro/libnds/lib
 
 .PHONY: all clean
 
@@ -18,15 +15,15 @@ all: $(TARGET).nds
 
 $(TARGET).nds: $(TARGET).elf
 	@echo "--- Creazione del file .nds finale ---"
-	ndstool -c $@ -9 $<
+	/opt/devkitpro/tools/bin/ndstool -c $@ -9 $<
 
 $(TARGET).elf: $(SOURCES)/main.c
 	@echo "--- Compilazione in corso ---"
 	@mkdir -p $(BUILD)
-	# Fase 1: Compila solo il file sorgente in un file oggetto (.o) senza fare il link
-	$(CC) $(CFLAGS) -c $< -o $(BUILD)/main.o
-	# Fase 2: Unisce il file oggetto usando le specifiche corrette del DS
-	$(CC) $(LDFLAGS) $(BUILD)/main.o -lnds9 -o $@
+	# Compiliamo il file oggetto inserendo la costante di sistema __NDS__ richiesto dai nuovi header
+	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(CFLAGS) -c $< -o $(BUILD)/main.o
+	# Uniamo il file applicando le specifiche hardware del DS
+	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(LDFLAGS) $(BUILD)/main.o -lnds9 -o $@
 
 clean:
 	@echo "Pulizia file temporanei..."
