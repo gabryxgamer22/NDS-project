@@ -1,27 +1,35 @@
-name: Compila ROM NDS
+name: Build NDS
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Usiamo direttamente il container ufficiale nativo fornito da devkitPro
-    container: devkitpro/devkitarm:latest
 
     steps:
-    - name: Scarica il codice sorgente
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Compila il gioco
-      run: |
-        make
+      - name: Install devkitPro and libnds
+        shell: bash
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates
+          wget -q https://github.com/devkitPro/pacman/releases/latest/download/devkitpro-pacman.deb
+          sudo dpkg -i devkitpro-pacman.deb
+          sudo dkp-pacman -Syu --noconfirm
+          sudo dkp-pacman -S --needed --noconfirm devkitARM libnds
 
-    - name: Salva il file NDS finale
-      uses: actions/upload-artifact@v4
-      with:
-        name: rom-nintendo-ds
-        path: |
-          *.nds
+      - name: Build NDS homebrew
+        shell: bash
+        run: |
+          set -eux
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=/opt/devkitpro/devkitARM
+          make clean || true
+          make
