@@ -8,16 +8,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Usiamo direttamente il container ufficiale nativo fornito da devkitPro
+    container: devkitpro/devkitarm:latest
 
     steps:
-    - name: Scarica il codice
+    - name: Scarica il codice sorgente
       uses: actions/checkout@v4
 
     - name: Compila il gioco
       run: |
-        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace devkitpro/devkitarm:20240215 make
+        make
 
-    - name: Salva il file NDS
+    - name: Salva il file NDS finale
       uses: actions/upload-artifact@v4
       with:
         name: rom-nintendo-ds
