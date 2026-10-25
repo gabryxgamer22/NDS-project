@@ -1,12 +1,12 @@
 #---------------------------------------------------------------------------------
-# PARAMETRI DI COMPILAZIONE DIRETTI (SENZA REGOLE ESTERNE)
+# PARAMETRI DI COMPILAZIONE DIRETTI (CON INCLUSIONE ARM9)
 #---------------------------------------------------------------------------------
 TARGET      := IlMioGiocoNDS
 SOURCES     := source
 BUILD       := build
 
-# Il segreto è passare sia il flag -DARM9 sia le specifiche minime senza raddoppiare i link
-CFLAGS      := -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ -I/opt/devkitpro/libnds/include
+# Aggiunto il percorso assoluto verso la cartella libnds/include/arm9 per trovare calico.h
+CFLAGS      := -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ -I/opt/devkitpro/libnds/include -I/opt/devkitpro/libnds/include/arm9
 LDFLAGS     := -specs=ds_arm9.specs -L/opt/devkitpro/libnds/lib
 
 .PHONY: all clean
@@ -20,9 +20,9 @@ $(TARGET).nds: $(TARGET).elf
 $(TARGET).elf: $(SOURCES)/main.c
 	@echo "--- Compilazione in corso ---"
 	@mkdir -p $(BUILD)
-	# Compiliamo il file oggetto inserendo la costante di sistema __NDS__ richiesto dai nuovi header
+	# Compilazione del file oggetto con tutti i percorsi di inclusione corretti
 	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(CFLAGS) -c $< -o $(BUILD)/main.o
-	# Uniamo il file applicando le specifiche hardware del DS
+	# Collegamento finale con le specifiche hardware del DS
 	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(LDFLAGS) $(BUILD)/main.o -lnds9 -o $@
 
 clean:
