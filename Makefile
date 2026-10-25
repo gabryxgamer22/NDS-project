@@ -6,8 +6,11 @@ DEVKITPRO ?= /opt/devkitpro
 CC        := $(DEVKITPRO)/devkitARM/bin/arm-none-eabi-gcc
 NDSTOOL   := $(DEVKITPRO)/tools/bin/ndstool
 
-CFLAGS    := -g -O2 -Wall -Wextra -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ \
-             -I$(DEVKITPRO)/libnds/include -I$(DEVKITPRO)/libnds/include/arm9
+CPPFLAGS := -I$(CURDIR)/include \
+            -I$(DEVKITPRO)/libnds/include \
+            -I$(DEVKITPRO)/libnds/include/arm9
+
+CFLAGS    := -g -O2 -Wall -Wextra -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__
 LDFLAGS   := -specs=ds_arm9.specs -L$(DEVKITPRO)/libnds/lib
 LDLIBS    := -lnds9
 
@@ -19,7 +22,7 @@ $(TARGET).nds: $(TARGET).elf
 	$(NDSTOOL) -c $@ -9 $<
 
 $(TARGET).elf: $(SOURCES)/main.c | $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $(BUILD)/main.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $(BUILD)/main.o
 	$(CC) $(LDFLAGS) $(BUILD)/main.o $(LDLIBS) -o $@
 
 $(BUILD):
