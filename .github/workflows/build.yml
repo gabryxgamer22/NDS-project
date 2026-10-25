@@ -14,14 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install devkitPro
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget tar xz-utils build-essential
-          mkdir -p /opt
-          cd /opt
-          wget https://github.com/devkitPro/buildscripts/releases/download/devkitpro-pacman/devkitpro-pacman.amd64.deb
-          sudo dpkg -i devkitpro-pacman.amd64.deb
+          wget https://apt.devkitpro.org/install-devkitpro-pacman
+          chmod +x install-devkitpro-pacman
+          sudo ./install-devkitpro-pacman
           sudo dkp-pacman -Syu --noconfirm
           sudo dkp-pacman -S --needed --noconfirm devkitARM libnds
 
