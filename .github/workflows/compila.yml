@@ -1,0 +1,26 @@
+name: Compila ROM NDS
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Scarica il codice
+      uses: actions/checkout@v4
+
+    - name: Compila il gioco
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace devkitpro/devkitarm make
+
+    - name: Salva il file NDS
+      uses: actions/upload-artifact@v4
+      with:
+        name: rom-nintendo-ds
+        path: |
+          *.nds
+          
