@@ -1,56 +1,95 @@
 #---------------------------------------------------------------------------------
-# CLEAR VARIABLES
+# Nome della ROM finale (senza estensione)
 #---------------------------------------------------------------------------------
-.SUFFIXES:
+TARGET		:=	IlMioGiocoNDS
 
 #---------------------------------------------------------------------------------
-# CHECK DEVKITARM
+# Cartelle del progetto
+#---------------------------------------------------------------------------------
+BUILD		:=	build
+SOURCES		:=	source
+INCLUDES	:=	include
+DATA		:=	data
+GRAPHICS	:=	graphics
+
+#---------------------------------------------------------------------------------
+# Controllo ambiente devkitARM
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
+# Include le regole ufficiali per Nintendo DS
 include $(DEVKITARM)/ds_rules
 
 #---------------------------------------------------------------------------------
-# TARGET CONFIGURATION
-#---------------------------------------------------------------------------------
-TARGET		:=	NDS_Project
-BUILD		:=	build
-SOURCES		:=	source
-INCLUDES	:=	include
-
-#---------------------------------------------------------------------------------
-# FLAGS
+# Opzioni del compilatore per ARM9 (Nintendo DS)
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
 CFLAGS	:=	-g -Wall -O2\
 			-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
 			-ffast-math \
-			$(ARCH) -DARM9
+			$(ARCH)
 
+CFLAGS	+=	-DARM9
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
 LDFLAGS	=	-g $(ARCH) -mthumb -mthumb-interwork
 
+# Collegamento alle librerie standard (libnds9)
 LIBS	:=	-lnds9
 LIBDIRS	:=	$(LIBNDS)
 
 #---------------------------------------------------------------------------------
-# RULES
+# Direttive per i file sorgenti
 #---------------------------------------------------------------------------------
-.PHONY: all clean
+ifneq ($(BUILD),$(CURDIR))
 
-all: $(TARGET).nds
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-$(TARGET).nds: $(TARGET).elf
-	@ndstool -c $@ -9 $<
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 
-$(TARGET).elf: $(SOURCES)/main.c
-	@mkdir -p $(BUILD)
-	@$(CC) $(CFLAGS) -I$(LIBNDS)/include -c $< -o $(BUILD)/main.o
-	@$(CC) $(LDFLAGS) -specs=ds_arm9.specs $(BUILD)/main.o -L$(LIBNDS)/lib $(LIBS) -o $@
+export OFILES	:=	$(CFILES:.c=.o) $(CPPFILES:.cpp=.o) $(SFILES:.s=.o)
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD)
+
+.PHONY: $(BUILD) clean all
+
+all: $(BUILD)
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile
 
 clean:
+	@echo pulizia progetto ...
 	@rm -fr $(BUILD) *.elf *.nds
+
+else
+
+#---------------------------------------------------------------------------------
+# Regole di compilazione effettive
+#---------------------------------------------------------------------------------
+DEPENDS	:=	$(OFILES:.o=.d)
+
+$(OUTPUT).nds: $(OUTPUT).elf
+
+$(OUTPUT).elf: $(OFILES)
+
+%.o: %.c
+	@echo  $(notdir $<)
+	$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+%.o: %.cpp
+	@echo  $(notdir $<)
+	$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(CXXFLAGS) $(INCLUDE) -c $< -o $@
+
+-include $(DEPENDS)
+
+endif
