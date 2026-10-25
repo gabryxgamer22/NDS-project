@@ -11,17 +11,11 @@ TARGET      := IlMioGiocoNDS
 SOURCES     := source
 BUILD       := build
 
-# Opzioni di compilazione obbligatorie per l'architettura ARM9 del DS
+# Opzioni di architettura e flag obbligatori per Nintendo DS
 ARCH        := -mthumb -mthumb-interwork
-CFLAGS      := -g -Wall -O2 -march=armv5te -mtune=arm946e-s -fomit-frame-pointer -ffast-math $(ARCH) -DARM9
-LDFLAGS     := -g $(ARCH) -mthumb -mthumb-interwork -specs=ds_arm9.specs
+CFLAGS      := -g -Wall -O2 -march=armv5te -mtune=arm946e-s -fomit-frame-pointer -ffast-math $(ARCH) -DARM9 -I$(LIBNDS)/include
+LDFLAGS     := -g $(ARCH) -mthumb -mthumb-interwork -specs=ds_arm9.specs -L$(LIBNDS)/lib
 
-LIBS        := -lnds9
-LIBDIRS     := -I$(LIBNDS)/include -L$(LIBNDS)/lib
-
-#---------------------------------------------------------------------------------
-# REGOLE DI COMPILAZIONE DIRECTE
-#---------------------------------------------------------------------------------
 .PHONY: all clean
 
 all: $(TARGET).nds
@@ -33,7 +27,8 @@ $(TARGET).nds: $(TARGET).elf
 $(TARGET).elf: $(SOURCES)/main.c
 	@echo "--- Compilazione in corso ---"
 	@mkdir -p $(BUILD)
-	$(CC) $(CFLAGS) $(LIBDIRS) $(LIBS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $(BUILD)/main.o
+	$(CC) $(LDFLAGS) $(BUILD)/main.o -lnds9 -o $@
 
 clean:
 	@echo "Pulizia file temporanei..."
