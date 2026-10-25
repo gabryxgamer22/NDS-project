@@ -1,6 +1,3 @@
-#---------------------------------------------------------------------------------
-# Configurazione build per NDS (ARM9)
-#---------------------------------------------------------------------------------
 TARGET   := IlMioGiocoNDS
 SOURCES  := source
 BUILD    := build
@@ -19,11 +16,9 @@ LDLIBS    := -lnds9
 all: $(TARGET).nds
 
 $(TARGET).nds: $(TARGET).elf
-	@echo "--- Creazione del file .nds finale ---"
 	$(NDSTOOL) -c $@ -9 $<
 
 $(TARGET).elf: $(SOURCES)/main.c | $(BUILD)
-	@echo "--- Compilazione in corso ---"
 	$(CC) $(CFLAGS) -c $< -o $(BUILD)/main.o
 	$(CC) $(LDFLAGS) $(BUILD)/main.o $(LDLIBS) -o $@
 
@@ -31,5 +26,4 @@ $(BUILD):
 	@mkdir -p $(BUILD)
 
 clean:
-	@echo "Pulizia file temporanei..."
 	@rm -rf $(BUILD) *.elf *.nds
