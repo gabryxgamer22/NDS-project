@@ -7,4 +7,4 @@
 #define MK_DEPRECATED
 #endif
 
-#endif /* CALICO_TYPES_H */
+#endif
