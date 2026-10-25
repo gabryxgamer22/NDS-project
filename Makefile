@@ -1,19 +1,18 @@
-#---------------------------------------------------------------------------------
-# PARAMETRI FONDAMENTALI
-#---------------------------------------------------------------------------------
+# 1. Prima includiamo le regole di sistema
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
 include $(DEVKITARM)/ds_rules
 
+# 2. Ora definiamo il nome del gioco e le cartelle
 TARGET      := IlMioGiocoNDS
 SOURCES     := source
 BUILD       := build
 
-# Usiamo solo le macro native di devkitPro per evitare doppioni
-CFLAGS      := $(ARM9FLAGS) -I$(LIBNDS)/include
-LDFLAGS     := $(NDS_LDFLAGS) -L$(LIBNDS)/lib
+# 3. Forziamo i parametri esatti usando += così devkitPro non li cancella
+CFLAGS      += -DARM9 -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -specs=ds_arm9.specs -I$(LIBNDS)/include
+LDFLAGS     += -specs=ds_arm9.specs -L$(LIBNDS)/lib
 
 .PHONY: all clean
 
