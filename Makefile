@@ -1,13 +1,20 @@
 #---------------------------------------------------------------------------------
-# PARAMETRI DI COMPILAZIONE DIRETTI (CON INCLUSIONE ARM9)
+# Configurazione build per NDS (ARM9)
 #---------------------------------------------------------------------------------
-TARGET      := IlMioGiocoNDS
-SOURCES     := source
-BUILD       := build
+TARGET   := IlMioGiocoNDS
+SOURCES  := source
+BUILD    := build
 
-# Aggiunto il percorso assoluto verso la cartella libnds/include/arm9 per trovare calico.h
-CFLAGS      := -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ -I/opt/devkitpro/libnds/include -I/opt/devkitpro/libnds/include/arm9
-LDFLAGS     := -specs=ds_arm9.specs -L/opt/devkitpro/libnds/lib
+DEVKITPRO ?= /opt/devkitpro
+DEVKITARM := $(DEVKITPRO)/devkitARM
+NDSLIB    := $(DEVKITPRO)/libnds
+CC        := $(DEVKITARM)/bin/arm-none-eabi-gcc
+NDSTOOL   := $(DEVKITPRO)/tools/bin/ndstool
+
+CFLAGS    := -g -O2 -Wall -Wextra -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ \
+             -I$(NDSLIB)/include -I$(NDSLIB)/include/arm9
+LDFLAGS   := -specs=ds_arm9.specs -L$(NDSLIB)/lib
+LDLIBS    := -lnds9
 
 .PHONY: all clean
 
@@ -15,15 +22,15 @@ all: $(TARGET).nds
 
 $(TARGET).nds: $(TARGET).elf
 	@echo "--- Creazione del file .nds finale ---"
-	/opt/devkitpro/tools/bin/ndstool -c $@ -9 $<
+	$(NDSTOOL) -c $@ -9 $<
 
-$(TARGET).elf: $(SOURCES)/main.c
+$(TARGET).elf: $(SOURCES)/main.c | $(BUILD)
 	@echo "--- Compilazione in corso ---"
+	$(CC) $(CFLAGS) -c $< -o $(BUILD)/main.o
+	$(CC) $(LDFLAGS) $(BUILD)/main.o $(LDLIBS) -o $@
+
+$(BUILD):
 	@mkdir -p $(BUILD)
-	# Compilazione del file oggetto con tutti i percorsi di inclusione corretti
-	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(CFLAGS) -c $< -o $(BUILD)/main.o
-	# Collegamento finale con le specifiche hardware del DS
-	/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc $(LDFLAGS) $(BUILD)/main.o -lnds9 -o $@
 
 clean:
 	@echo "Pulizia file temporanei..."
