@@ -9,32 +9,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install devkitPro
-        shell: bash
-        run: |
-          set -eux
-          sudo apt-get update
-          sudo apt-get install -y wget ca-certificates
-          wget https://apt.devkitpro.org/install-devkitpro-pacman
-          chmod +x install-devkitpro-pacman
-          sudo ./install-devkitpro-pacman
-
-      - name: Install libnds and devkitARM
-        shell: bash
-        run: |
-          set -eux
-          sudo /usr/local/bin/dkp-pacman -S --needed --noconfirm devkitARM libnds
-
       - name: Build NDS homebrew
-        shell: bash
         run: |
-          set -eux
-          export DEVKITPRO=/opt/devkitpro
-          export DEVKITARM=/opt/devkitpro/devkitARM
           make clean || true
           make
