@@ -16,9 +16,14 @@ jobs:
 
       - name: Install devkitPro
         run: |
-          wget https://apt.devkitpro.org/install-devkitpro-pacman
-          chmod +x install-devkitpro-pacman
-          sudo ./install-devkitpro-pacman
+          curl -L --fail --retry 3 \
+            -A "Mozilla/5.0" \
+            https://apt.devkitpro.org/install-devkitpro-pacman \
+            -o /tmp/install-devkitpro-pacman
+
+          chmod +x /tmp/install-devkitpro-pacman
+          sudo /tmp/install-devkitpro-pacman
+
           sudo dkp-pacman -Syu --noconfirm
           sudo dkp-pacman -S --needed --noconfirm devkitARM libnds
 
