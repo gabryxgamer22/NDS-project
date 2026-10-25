@@ -11,8 +11,10 @@ NDSLIB    := $(DEVKITPRO)/libnds
 CC        := $(DEVKITARM)/bin/arm-none-eabi-gcc
 NDSTOOL   := $(DEVKITPRO)/tools/bin/ndstool
 
+# Include locale per compatibilità: se un toolchain vecchio/non completo
+# manca calico.h, usiamo un header di fallback del progetto.
 CFLAGS    := -g -O2 -Wall -Wextra -march=armv5te -mtune=arm946e-s -mthumb -mthumb-interwork -DARM9 -D__NDS__ \
-             -I$(NDSLIB)/include -I$(NDSLIB)/include/arm9
+             -I$(CURDIR)/include -I$(NDSLIB)/include -I$(NDSLIB)/include/arm9
 LDFLAGS   := -specs=ds_arm9.specs -L$(NDSLIB)/lib
 LDLIBS    := -lnds9
 
