@@ -13,10 +13,9 @@ jobs:
       image: devkitpro/devkitarm:latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build NDS homebrew
+      - name: Build
         run: |
           make clean || true
           make
